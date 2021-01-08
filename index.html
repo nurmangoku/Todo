@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Meower</title>
+</head>
+<body>
+    <h1 class="title">What you want to do today?</h1>
+    <form>
+        <label for="text">Name</label>
+        <input type="text" id="text" name="text">
+        <button>Add it!</button>
+    </form>
+    <div class="loading"></div>
+    <div class="text"></div>
+
+
+    <script>
+        const form = document.querySelector('form')
+        const textElement = document.querySelector('.text')
+        const loadingElement = document.querySelector('.loading')
+        const API_URL = 'https://my-express-api.netlify.app/.netlify/functions/api'
+
+        loadingElement.style.display = 'none'
+
+        listAlltext()
+
+        form.addEventListener('submit',(event)=>{
+            event.preventDefault()
+
+            const formData = new FormData(form)
+            const text= formData.get('text')
+            const mew = {
+                text
+            }
+            form.style.display="none"
+            loadingElement.style.display = ''
+            
+            fetch(API_URL,{
+                method:'POST',
+                body: JSON.stringify(mew),
+                headers: {
+                    'content-type':'application/json'
+                }
+            }).then(response=>{
+                response.json()
+            })
+              .then(createdMew=>{
+                listAlltext ()
+                  form.reset()
+                  loadingElement.style.display = 'none'
+                  form.style.display=""
+                  })
+              .catch(err=>console.log(err))
+        })
+
+        async function listAlltext (){
+            try {
+                textElement.innerHTML=''
+                const response = await fetch(API_URL)
+                const text = await response.json()
+                text.reverse()
+                text.forEach(mew => {
+                    const div = document.createElement('div')
+                    const header = document.createElement('h3')
+                    header.textContent = mew.text
+                    div.appendChild(header)
+                    textElement.appendChild(div)
+                });
+            } catch (err) {
+                console.log(err);
+            }
+        }
+    </script>
+</body>
+</html>
